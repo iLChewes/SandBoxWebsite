@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Valentine?</title>
+
+    <style>
+        :root {
+            --pink: #ff5fa2;
+            --pink2: #ff8fc1;
+            --mint: #46e6b2;
+            --mint2: #b7ffe8;
+
+            --text: rgba(30, 10, 25, 0.92);
+            --muted: rgba(30, 10, 25, 0.68);
+
+            --card: rgba(255, 255, 255, 0.75);
+            --border: rgba(255, 95, 162, 0.25);
+            --shadow: 0 16px 50px rgba(20, 10, 20, 0.22);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            /* no scrolling */
+            font-family: ui-rounded, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(900px 700px at 15% 15%, rgba(255, 95, 162, 0.55) 0%, transparent 55%),
+                radial-gradient(900px 700px at 85% 70%, rgba(70, 230, 178, 0.50) 0%, transparent 60%),
+                linear-gradient(135deg, rgba(255, 143, 193, 0.65), rgba(183, 255, 232, 0.60));
+        }
+
+        .stage {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+        }
+
+        /* Floating hearts (subtle background) */
+        .heart {
+            position: absolute;
+            font-size: var(--size, 18px);
+            opacity: 0.22;
+            filter: drop-shadow(0 8px 18px rgba(0, 0, 0, .10));
+            animation: floatUp var(--dur, 10s) linear infinite;
+            transform: translateY(0) rotate(var(--rot, 0deg));
+            pointer-events: none;
+            user-select: none;
+            z-index: 1;
+        }
+
+        @keyframes floatUp {
+            from {
+                transform: translateY(20vh) rotate(var(--rot, 0deg));
+            }
+
+            to {
+                transform: translateY(-120vh) rotate(calc(var(--rot, 0deg) + 50deg));
+            }
+        }
+
+        @keyframes floatUpAngle {
+            from {
+                transform: translate3d(0, 20vh, 0) rotate(var(--rot, 0deg));
+            }
+
+            to {
+                transform: translate3d(var(--dx, 0px), -120vh, 0) rotate(calc(var(--rot, 0deg) + 70deg));
+            }
+        }
+
+        /* CORGI STICKERS (background layer) */
+        .sticker {
+            position: absolute;
+            width: var(--w, 120px);
+            height: var(--w, 120px);
+            object-fit: cover;
+            border-radius: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.65);
+            opacity: 0.92;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, .18);
+            transform: translate3d(0, 0, 0) rotate(var(--r, 0deg)) scale(1);
+            will-change: transform, left, top;
+            z-index: 2;
+            /* behind card */
+            pointer-events: none;
+            /* clicks go through */
+            user-select: none;
+        }
+
+        /* Center content card */
+        .card {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: min(720px, calc(100% - 32px));
+            padding: 28px 26px;
+            border-radius: 22px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            z-index: 10;
+            /* above stickers */
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            font-size: clamp(26px, 4vw, 44px);
+            letter-spacing: -0.02em;
+            color: rgba(35, 10, 25, 0.94);
+            text-shadow: 0 10px 20px rgba(255, 95, 162, 0.12);
+        }
+
+        p {
+            margin: 0 0 18px;
+            color: var(--muted);
+            font-size: clamp(14px, 2.2vw, 18px);
+            line-height: 1.4;
+        }
+
+        .btn-row {
+            display: inline-flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: nowrap;
+        }
+
+        button {
+            appearance: none;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: rgba(25, 8, 18, 0.92);
+            padding: 12px 18px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease, opacity 200ms ease;
+            user-select: none;
+            will-change: transform;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.10);
+        }
+
+        #yesBtn {
+            background: linear-gradient(135deg, var(--mint), var(--mint2));
+        }
+
+        #noBtn {
+            background: linear-gradient(135deg, var(--pink), var(--pink2));
+        }
+
+        button:hover {
+            filter: brightness(1.03) saturate(1.05);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-wrap {
+            display: inline-block;
+            transform-origin: center;
+            transition: transform 220ms ease;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="stage" id="stage">
+        <div class="card">
+            <h1 id="title">Will you be my Valentine? 💘</h1>
+
+            <div class="btn-row" id="btnRow" aria-label="yes-no">
+                <span class="btn-wrap" id="yesWrap"><button id="yesBtn">Yes 💚</button></span>
+                <span class="btn-wrap" id="noWrap"><button id="noBtn">No 💗</button></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // -------------------------
+        // YES/NO behavior
+        // -------------------------
+        const titleEl = document.getElementById('title');
+        const subtitleEl = document.getElementById('subtitle');
+        const btnRow = document.getElementById('btnRow');
+
+        const yesWrap = document.getElementById('yesWrap');
+        const noWrap = document.getElementById('noWrap');
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+
+        let yesScale = 1.0;
+        let noScale = 1.0;
+
+        function applyButtonScales() {
+            yesWrap.style.transform = `scale(${yesScale})`;
+            noWrap.style.transform = `scale(${noScale})`;
+        }
+
+        noBtn.addEventListener('click', () => {
+            yesScale = Math.min(3.2, yesScale + 0.20);
+            noScale = Math.max(0.35, noScale - 0.10);
+            applyButtonScales();
+        });
+
+        yesBtn.addEventListener('click', () => {
+            titleEl.textContent = "asloch";
+
+            // subtitleEl is null in your HTML right now, so guard it
+            if (subtitleEl) subtitleEl.textContent = "";
+
+            btnRow.remove();
+
+            // NEW: burst hearts from left + right edges
+            startSideHeartBurst({ durationMs: 3500, intervalMs: 60 });
+        });
+
+        applyButtonScales();
+
+        // -------------------------
+        // CORGI STICKERS (float everywhere + bounce + SMOOTH ping-pong scale)
+        // -------------------------
+        const stage = document.getElementById('stage');
+
+        const corgiPool = [
+            "images/corgi1.jpg",
+            //  "images/corgi2.jpg",
+            "images/corgi3.jpg",
+            "images/corgi4.png",
+            "images/corgi5.png",
+            "images/corgi6.png",
+        ];
+
+        const stickers = [];
+
+        function rand(min, max) { return Math.random() * (max - min) + min; }
+        function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+        function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+        function lerp(a, b, t) { return a + (b - a) * t; }
+
+        // Smooth easing (no sudden acceleration changes)
+        function smoothstep(t) { return t * t * (3 - 2 * t); } // 0..1 -> 0..1
+
+        function createSticker(src) {
+            const img = document.createElement('img');
+            img.className = 'sticker';
+            img.src = src;
+
+            const w = Math.round(rand(78, 150));
+            img.style.setProperty('--w', `${w}px`);
+            img.style.setProperty('--r', `${Math.round(rand(-18, 18))}deg`);
+
+            stage.appendChild(img);
+
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            // Random initial direction:
+            // either start at small and grow, or start at big and shrink
+            const startGrowing = Math.random() < 0.5;
+
+            const s = {
+                el: img,
+                w,
+
+                // position
+                x: rand(0, Math.max(0, vw - w)),
+                y: rand(0, Math.max(0, vh - w)),
+
+                // velocity (px/sec)
+                vx: rand(-28, 28),
+                vy: rand(-24, 24),
+
+                // SMOOTH ping-pong scale parameters
+                scaleMin: rand(0.55, 0.90),
+                scaleMax: rand(1.05, 1.60),
+                scalePeriod: rand(2.8, 6.0),     // seconds for one leg (min->max OR max->min)
+                scaleT: startGrowing ? 0 : 1,    // progress 0..1
+                scaleDir: startGrowing ? 1 : -1, // direction +1 or -1
+
+                // subtle sway rotation (kept smooth)
+                rotBase: rand(-20, 20),
+                rotAmp: rand(1.5, 5.5),
+                rotHz: rand(0.06, 0.18),
+                rotPhase: rand(0, Math.PI * 2),
+            };
+
+            stickers.push(s);
+        }
+
+        function spawnStickers(count = 16) {
+            stickers.length = 0;
+            document.querySelectorAll('.sticker').forEach(el => el.remove());
+
+            for (let i = 0; i < count; i++) {
+                createSticker(pick(corgiPool));
+            }
+        }
+
+        // Animation loop: move within viewport + bounce + smooth scale ping-pong
+        let lastT = performance.now();
+        function tick(now) {
+            const dt = Math.min(0.033, (now - lastT) / 1000);
+            lastT = now;
+
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            for (const s of stickers) {
+                // -------------------------
+                // Movement
+                // -------------------------
+                s.x += s.vx * dt;
+                s.y += s.vy * dt;
+
+                const minX = 0;
+                const minY = 0;
+                const maxX = Math.max(0, vw - s.w);
+                const maxY = Math.max(0, vh - s.w);
+
+                if (s.x <= minX) { s.x = minX; s.vx = Math.abs(s.vx) * rand(0.9, 1.1); }
+                if (s.x >= maxX) { s.x = maxX; s.vx = -Math.abs(s.vx) * rand(0.9, 1.1); }
+                if (s.y <= minY) { s.y = minY; s.vy = Math.abs(s.vy) * rand(0.9, 1.1); }
+                if (s.y >= maxY) { s.y = maxY; s.vy = -Math.abs(s.vy) * rand(0.9, 1.1); }
+
+                // gentle drift changes (still smooth overall)
+                if (Math.random() < 0.012) {
+                    s.vx = clamp(s.vx + rand(-8, 8), -38, 38);
+                    s.vy = clamp(s.vy + rand(-8, 8), -34, 34);
+                }
+
+                // -------------------------
+                // Smooth scale ping-pong
+                // -------------------------
+                const step = dt / s.scalePeriod;
+                s.scaleT += s.scaleDir * step;
+
+                if (s.scaleT >= 1) { s.scaleT = 1; s.scaleDir = -1; }
+                if (s.scaleT <= 0) { s.scaleT = 0; s.scaleDir = 1; }
+
+                const easedT = smoothstep(s.scaleT);
+                const scale = lerp(s.scaleMin, s.scaleMax, easedT);
+
+                // -------------------------
+                // Rotation sway (smooth)
+                // -------------------------
+                const tSec = now / 1000;
+                const sway = Math.sin((Math.PI * 2) * s.rotHz * tSec + s.rotPhase) * s.rotAmp;
+                const rot = s.rotBase + sway;
+
+                // apply
+                s.el.style.left = `${Math.round(s.x)}px`;
+                s.el.style.top = `${Math.round(s.y)}px`;
+                s.el.style.transform = `rotate(${rot}deg) scale(${scale})`;
+            }
+
+            requestAnimationFrame(tick);
+        }
+
+        // -------------------------
+        // Floating hearts (subtle)
+        // -------------------------
+        const heartChars = ["💚", "💗", "💖", "💘", "💞", "💕"];
+        function createHeart() {
+            const h = document.createElement('div');
+            h.className = 'heart';
+            h.textContent = heartChars[Math.floor(Math.random() * heartChars.length)];
+
+            const x = rand(0, window.innerWidth);
+            const size = Math.round(rand(14, 26));
+            const dur = rand(8, 15).toFixed(2);
+            const rot = Math.round(rand(-25, 25));
+
+            h.style.left = `${Math.round(x)}px`;
+            h.style.top = `${Math.round(rand(90, 130))}vh`;
+            h.style.setProperty('--size', `${size}px`);
+            h.style.setProperty('--dur', `${dur}s`);
+            h.style.setProperty('--rot', `${rot}deg`);
+
+            stage.appendChild(h);
+            setTimeout(() => h.remove(), (parseFloat(dur) + 0.3) * 1000);
+        }
+
+        function startHearts() {
+            for (let i = 0; i < 15; i++) setTimeout(createHeart, i * 260);
+            setInterval(createHeart, 520);
+        }
+
+        function createSideHeart(side) {
+            const h = document.createElement('div');
+            h.className = 'heart';
+            h.textContent = heartChars[Math.floor(Math.random() * heartChars.length)];
+
+            const vw = window.innerWidth;
+
+            // Spawn near left or right edge
+            const edgePadding = 18;
+            const edgeSpread = 70;
+            const x = (side === "L")
+                ? rand(edgePadding, edgePadding + edgeSpread)
+                : rand(vw - edgePadding - edgeSpread, vw - edgePadding);
+
+            // Faster + bigger for burst
+            const size = Math.round(rand(36, 72));
+            const dur = rand(2.2, 4.2).toFixed(2);
+            const rot = Math.round(rand(-35, 35));
+
+            // NEW: horizontal drift (angle)
+            // Left side tends to drift right; right side tends to drift left, but with randomness.
+            const dir = (side === "L") ? 1 : -1;
+            const dx = dir * rand(120, 520) + rand(-120, 120); // px drift across the screen
+
+            h.style.left = `${Math.round(x)}px`;
+            h.style.top = `${Math.round(rand(95, 140))}vh`;
+            h.style.setProperty('--size', `${size}px`);
+            h.style.setProperty('--dur', `${dur}s`);
+            h.style.setProperty('--rot', `${rot}deg`);
+            h.style.setProperty('--dx', `${Math.round(dx)}px`);
+
+            // More visible than background hearts
+            h.style.opacity = "0.55";
+
+            // Use angled animation for burst hearts
+            h.style.animation = `floatUpAngle ${dur}s linear infinite`;
+
+            stage.appendChild(h);
+            setTimeout(() => h.remove(), (parseFloat(dur) + 0.4) * 1000);
+        }
+
+        function startSideHeartBurst({ durationMs = 8000, intervalMs = 70 } = {}) {
+            const startedAt = performance.now();
+
+            // spawn a few instantly so it feels snappy
+            for (let i = 0; i < 8; i++) {
+                createSideHeart("L");
+                createSideHeart("R");
+            }
+
+            const timer = setInterval(() => {
+                createSideHeart("L");
+                createSideHeart("R");
+
+                if (performance.now() - startedAt >= durationMs) {
+                    clearInterval(timer);
+                }
+            }, intervalMs);
+        }
+
+        // init
+        spawnStickers(32);
+        startHearts();
+        requestAnimationFrame(tick);
+
+        // keep stickers within bounds on resize
+        window.addEventListener('resize', () => {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            for (const s of stickers) {
+                s.x = clamp(s.x, 0, Math.max(0, vw - s.w));
+                s.y = clamp(s.y, 0, Math.max(0, vh - s.w));
+            }
+        });
+    </script>
+</body>
+
+</html>
